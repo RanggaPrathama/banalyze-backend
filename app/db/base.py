@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 from typing import Any
 import uuid
-
 from sqlalchemy import DateTime, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
 
@@ -92,4 +91,5 @@ class Base(DeclarativeBase):
 # This is used by Alembic for migrations
 def import_models() -> None:
     """Import all models to register them with SQLAlchemy."""
-    from app.models import user, history 
+    from app.models import user 
+    from app.models import history_classify

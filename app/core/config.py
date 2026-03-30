@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     app_name: str = "Banalyze Backend"
     log_level: str = "INFO"
     port: int = 8000
-    reload: bool = True
+    reload: bool = False
     env: str = "development"
     debug_mode: bool = True
     base_url: str = Field(alias="BASE_URL", default="http://localhost:8000")
@@ -28,9 +28,9 @@ class Settings(BaseSettings):
     db_password: str = "postgres"
     db_database: str = "banalyze_db"
     db_echo: bool = True
-    db_pool_size: int = 10
-    db_max_overflow: int = 20
-    db_pool_timeout: int = 30
+    db_pool_size: int = 5
+    db_max_overflow: int = 5
+    db_pool_timeout: int = 10
 
     @property
     def database_url(self) -> str:
