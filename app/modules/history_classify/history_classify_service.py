@@ -49,6 +49,7 @@ class HistoryClassifyService:
         search: Optional[str] = None,
         order_by: str = "createdAt",
         order_type: str = "DESC",
+        no_pagination: bool = False,
     ) -> Tuple[List[RiwayatKlasifikasi], int]:
         sort_column = _ORDER_BY_MAP.get(order_by, RiwayatKlasifikasi.created_at)
         sort_direction = desc(sort_column) if order_type.upper() == "DESC" else asc(sort_column)
@@ -72,10 +73,13 @@ class HistoryClassifyService:
         )
         total = count_result.scalar_one()
 
-        offset = (page - 1) * paginate
-        result = await self.db.execute(
-            base_query.order_by(sort_direction).offset(offset).limit(paginate)
-        )
+        if no_pagination:
+            result = await self.db.execute(base_query.order_by(sort_direction))
+        else:
+            offset = (page - 1) * paginate
+            result = await self.db.execute(
+                base_query.order_by(sort_direction).offset(offset).limit(paginate)
+            )
         items = result.scalars().all()
 
         return items, total

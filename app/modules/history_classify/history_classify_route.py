@@ -19,6 +19,7 @@ async def get_all_history(
     search: Optional[str] = Query(default=None),
     order_by: str = Query(default="createdAt"),
     order_type: str = Query(default="DESC", pattern="^(ASC|DESC|asc|desc)$"),
+    no_pagination: bool = Query(default=False),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -30,6 +31,7 @@ async def get_all_history(
         search=search,
         order_by=order_by,
         order_type=order_type,
+        no_pagination=no_pagination,
     )
 
     return success_response(
