@@ -115,5 +115,5 @@ async def root():
 app.include_router(api_router)
 
 # Serve uploaded files as static assets at /static
-os.makedirs("uploads/avatars", exist_ok=True)
-app.mount("/static", StaticFiles(directory="uploads"), name="static")
+# os.makedirs("uploads/avatars", exist_ok=True)
+# app.mount("/static", StaticFiles(directory="uploads"), name="static") # command first because it will host in vercel 
