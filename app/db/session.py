@@ -15,6 +15,7 @@ engine = create_async_engine(
     max_overflow=settings.db_max_overflow,
     pool_timeout=settings.db_pool_timeout,
     pool_pre_ping=True,  # Verify connections before use
+    connect_args={"statement_cache_size": 0},  # Required for PgBouncer transaction pooling (Supabase)
 )
 
 # Session factory

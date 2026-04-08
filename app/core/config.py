@@ -34,7 +34,7 @@ class Settings(BaseSettings):
 
     @property
     def database_url(self) -> str:
-        return f"postgresql+asyncpg://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_database}"
+        return f"postgresql+asyncpg://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_database}?ssl=require"
     
     # JWT Authentication Configuration
     jwt_secret_key: str = Field(alias="JWT_SECRET_KEY", default="super_secret_default_key")
@@ -45,6 +45,12 @@ class Settings(BaseSettings):
 
     # Redis Configuration
     redis_url: str = ""
+
+    # Storage Configuration
+    storage_backend: str = "local"  # "local" or "supabase"
+    supabase_url: str = Field(alias="SUPABASE_URL", default="")
+    supabase_key: str = Field(alias="SUPABASE_KEY", default="")
+    supabase_bucket: str = Field(alias="SUPABASE_BUCKET", default="banalyze")
     
 
 settings = Settings()
