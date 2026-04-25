@@ -14,6 +14,8 @@ router = APIRouter()
 
 @router.get("", response_model=SuccessResponse[list[HistoryClassifyResponse]])
 async def get_all_history(
+    start_date: Optional[str] = Query(default=None, description="Filter by start date (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(default=None, description="Filter by end date (YYYY-MM-DD)"),
     page: int = Query(default=1, ge=1),
     paginate: int = Query(default=20, ge=1, le=100),
     search: Optional[str] = Query(default=None),
@@ -25,6 +27,8 @@ async def get_all_history(
 ):
     service = HistoryClassifyService(db)
     histories, total = await service.get_all_history(
+        start_date=start_date,
+        end_date=end_date,
         user_id=current_user.id,
         page=page,
         paginate=paginate,

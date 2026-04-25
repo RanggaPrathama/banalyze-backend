@@ -10,6 +10,7 @@ from sqlalchemy.future import select
 from sqlalchemy import cast, String, func, asc, desc
 from app.models.history_classify import RiwayatKlasifikasi
 from app.modules.file_uploads import FileUploadService
+from app.modules.history_classify.history_classify_schema import HistoryClassifyResponse
 
 _ORDER_BY_MAP = {
     "createdAt": RiwayatKlasifikasi.created_at,
@@ -43,6 +44,8 @@ class HistoryClassifyService:
 
     async def get_all_history(
         self,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
         user_id: Optional[str] = None,
         page: int = 1,
         paginate: int = 20,
@@ -62,12 +65,41 @@ class HistoryClassifyService:
             )
 
         if search:
-            search_term = f"%{search}%"
+            clean_search = search.strip()
+            search_term = f"%{clean_search}%"
+            class_search_term = f"{clean_search.replace(' ', '_')}%"
             base_query = base_query.where(
                 RiwayatKlasifikasi.title.ilike(search_term)
-                | RiwayatKlasifikasi.predicted_class.ilike(search_term)
+                | RiwayatKlasifikasi.predicted_class.ilike(class_search_term)
             )
 
+        if start_date:
+            try:
+                start_dt = datetime.strptime(start_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                base_query = base_query.where(RiwayatKlasifikasi.created_at >= start_dt)
+            except ValueError:
+                pass  # Invalid date format, ignore the filter
+
+        if end_date:
+            try:
+                end_dt = datetime.strptime(end_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                base_query = base_query.where(RiwayatKlasifikasi.created_at <= end_dt)
+            except ValueError:
+                pass  # Invalid date format, ignore the filter
+        if start_date and end_date:
+            try:
+                start_dt = datetime.strptime(start_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                end_dt = datetime.strptime(end_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                if start_dt > end_dt:
+                    # Swap if start date is greater than end date
+                    start_dt, end_dt = end_dt, start_dt
+                base_query = base_query.where(
+                    RiwayatKlasifikasi.created_at.between(start_dt, end_dt)
+                )
+            except ValueError:
+                pass  # Invalid date format, ignore the filter
+        
+        print(f"Debug base_query: {base_query}")
         count_result = await self.db.execute(
             select(func.count()).select_from(base_query.subquery())
         )
@@ -81,7 +113,11 @@ class HistoryClassifyService:
                 base_query.order_by(sort_direction).offset(offset).limit(paginate)
             )
         items = result.scalars().all()
-
+        # keluarkan datanya untuk debug
+        
+        # Generator fix: Hilangkan tanda kurung bulat di dalam list
+        # print(f"Debug items: {[HistoryClassifyResponse(id=str(item.id), user_id=str(item.user_id), title=item.title, image_path=item.image_path, predicted_class=item.predicted_class, confidence=item.confidence, model_used=item.model_used, created_at=item.created_at, updated_at=item.updated_at) for item in items]}")
+        
         return items, total
 
     async def get_history_by_id(self, history_id: str, user_id: Optional[str] = None) -> Optional[RiwayatKlasifikasi]:
